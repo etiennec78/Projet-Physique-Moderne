@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt
-from numpy import arange, exp, ndarray, pi
+from numpy import arange, exp, imag, ndarray, pi, real
 
 hbar = 1.054_571_628e-34  # reducted const of Planck (J.s)
 m = 9.1e-31  # mass of electron (kg)
@@ -22,14 +22,18 @@ def GaussWP(
 
 def plotGaussWP(k0: float, a: float, t: float, range_: ndarray) -> None:
     fig, ax = plt.subplots()
-    values = []
+    values_real = []
+    values_imag = []
 
     for x in range_:
         y = GaussWP(k0, a, x, t)
-        values.append(y)
+
+        values_real.append(real(y))
+        values_imag.append(imag(y))
 
     range_list = list(range_)
-    ax.plot(range_list, values)
+    ax.plot(range_list, values_real)
+    ax.plot(range_list, values_imag)
     plt.show()
 
 
