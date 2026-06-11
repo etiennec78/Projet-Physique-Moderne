@@ -1,4 +1,5 @@
-from numpy import exp, pi
+from matplotlib import pyplot as plt
+from numpy import arange, exp, ndarray, pi
 
 hbar = 1.054_571_628e-34  # reducted const of Planck (J.s)
 m = 9.1e-31  # mass of electron (kg)
@@ -19,10 +20,28 @@ def GaussWP(
     return amp * envelop * plane_wave
 
 
-if __name__ == "__main__":
-    k0 = 2
-    a = 2
-    x = 2
-    t = 0
+def plotGaussWP(k0: float, a: float, t: float, range_: ndarray) -> None:
+    fig, ax = plt.subplots()
+    values = []
 
-    print(GaussWP(k0, a, x, t))
+    for x in range_:
+        y = GaussWP(k0, a, x, t)
+        values.append(y)
+
+    range_list = list(range_)
+    ax.plot(range_list, values)
+    plt.show()
+
+
+if __name__ == "__main__":
+    K = 2
+    A = 2
+    T = 0
+    DELTA_K = 0.5
+
+    range_start = -pi / DELTA_K
+    range_end = pi / DELTA_K
+    RANGE_STEP = 0.05
+    range_ = arange(range_start, range_end, RANGE_STEP)
+
+    plotGaussWP(K, A, T, range_)
