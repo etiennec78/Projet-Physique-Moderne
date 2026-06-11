@@ -17,7 +17,9 @@ def derive(x_values: list, y_values: list, i: int) -> float:
         raise ValueError("The index is higher than the length of this array")
 
     if i == 0 or i == len(x_values) - 1:
-        raise ValueError("Values are missing to the left or the right of this index to derive")
+        raise ValueError(
+            "Values are missing to the left or the right of this index to derive"
+        )
 
     a = i - 1
     b = i + 1
