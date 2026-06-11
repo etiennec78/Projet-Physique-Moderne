@@ -1,4 +1,4 @@
-from numpy import exp
+from numpy import exp, pi
 
 hbar = 1.054_571_628e-34  # reducted const of Planck (J.s)
 m = 9.1e-31  # mass of electron (kg)
@@ -6,10 +6,11 @@ m = 9.1e-31  # mass of electron (kg)
 
 def GaussWP(
     k0: float,
-    amp: float,
+    a: float,
     x: float,
     t: float
 ) -> complex:
+    amp = pow(2 / (pi * pow(a, 2)), 1 / 4)
     omega = hbar * pow(k0, 2) / (2 * m)
     return amp * exp(1j * (k0 * x - omega * t))
 
