@@ -38,14 +38,13 @@ def plotGaussWP(k0: float, a: float, t: float, range_: ndarray) -> None:
 
 
 if __name__ == "__main__":
-    K = 2
-    A = 2
+    K = 5e9
+    A = 1.5e-8
     T = 0
-    DELTA_K = 0.5
 
-    range_start = -pi / DELTA_K
-    range_end = pi / DELTA_K
-    RANGE_STEP = 0.05
+    range_start = -40e-9
+    range_end = 40e-9
+    RANGE_STEP = 0.1e-9
     range_ = arange(range_start, range_end, RANGE_STEP)
 
     plotGaussWP(K, A, T, range_)
