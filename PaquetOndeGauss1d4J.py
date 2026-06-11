@@ -12,7 +12,11 @@ def GaussWP(
 ) -> complex:
     amp = pow(2 / (pi * pow(a, 2)), 1 / 4)
     omega = hbar * pow(k0, 2) / (2 * m)
-    return amp * exp(1j * (k0 * x - omega * t))
+
+    envelop = exp(-pow(x, 2) / pow(a, 2))
+    plane_wave = exp(1j * (k0 * x - omega * t))
+
+    return amp * envelop * plane_wave
 
 
 if __name__ == "__main__":
