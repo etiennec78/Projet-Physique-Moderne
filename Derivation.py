@@ -33,9 +33,12 @@ def derive(x_values: list, y_values: list, i: int) -> float:
 
 
 if __name__ == "__main__":
-    DEGREE = 5
 
+    # Deriving x²
     x_values = arange(1, 100, 0.1)
-    y_values = power_function(x_values, DEGREE)
+    y_values = power_function(x_values, 2)
+    print(derive(x_values, y_values, 100))
 
+    # Deriving 2x
+    y_values = 2 * x_values
     print(derive(x_values, y_values, 100))
