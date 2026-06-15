@@ -1,14 +1,6 @@
 from numpy import arange, ndarray
 
 
-def power_function(range_: ndarray, degree: float):
-    array_ = []
-
-    for i in range_:
-        array_.append(pow(i, degree))
-    return array_
-
-
 def derive(x_values: list, y_values: list, i: int) -> float:
     if len(x_values) != len(y_values):
         raise ValueError("Both lists should have the same length")
@@ -49,7 +41,7 @@ if __name__ == "__main__":
 
     # Deriving x²
     x_values = arange(1, 100, 0.1)
-    y_values = power_function(x_values, 2)
+    y_values = x_values ** 2
     print(derive(x_values, y_values, 100))
 
     # Double deriving x²
