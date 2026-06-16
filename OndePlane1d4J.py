@@ -95,7 +95,7 @@ def plotEnvelop(
         values.append([])
         for x in range_:
             # Get the value of the wave
-            y = -1 ** j * amp * (1 + cos(delta_k / 2 * x))
+            y = -(1**j) * amp * (1 + cos(delta_k / 2 * x))
             if filter_ is not None:
                 y = filter_(y)
             values[j].append(y)

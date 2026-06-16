@@ -5,16 +5,11 @@ hbar = 1.054_571_628e-34  # reducted const of Planck (J.s)
 m = 9.1e-31  # mass of electron (kg)
 
 
-def GaussWP(
-    k0: float,
-    a: float,
-    x: float,
-    t: float
-) -> complex:
+def GaussWP(k0: float, a: float, x: float, t: float) -> complex:
     amp = (2 / (pi * a**2)) ** (1 / 4)
     omega = hbar * k0**2 / (2 * m)
 
-    envelop = exp(-x**2 / a**2)
+    envelop = exp(-(x**2) / a**2)
     plane_wave = exp(1j * (k0 * x - omega * t))
 
     return amp * envelop * plane_wave

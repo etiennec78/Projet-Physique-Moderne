@@ -1,4 +1,4 @@
-from numpy import arange, ndarray
+from numpy import arange
 
 
 def derive(x_values: list, y_values: list, i: int) -> float:
@@ -38,10 +38,9 @@ def second_derivative(x_values: list, y_values: list, i: int) -> float:
 
 
 if __name__ == "__main__":
-
     # Deriving x²
     x_values = arange(1, 100, 0.1)
-    y_values = x_values ** 2
+    y_values = x_values**2
     print(derive(x_values, y_values, 100))
 
     # Double deriving x²

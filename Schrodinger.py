@@ -3,7 +3,9 @@ from numpy import empty, linspace
 from PaquetOndeGauss1d4J import GaussWP
 
 
-def wave_function(nx: int, nt: int, L: float, T: float, k0: float, a: float) -> np.ndarray:
+def wave_function(
+    nx: int, nt: int, L: float, T: float, k0: float, a: float
+) -> np.ndarray:
     """A wave function as a 2D table.
 
     Params:
@@ -23,7 +25,7 @@ def wave_function(nx: int, nt: int, L: float, T: float, k0: float, a: float) -> 
         raise ValueError("The amount of lines and columns must be at least 1.")
 
     # Generate lists containing x and t values
-    x_tab = linspace(-L/2, L/2, nx)
+    x_tab = linspace(-L / 2, L / 2, nx)
     t_tab = linspace(0, T, nt)
 
     # Generate a 2D tab containing random data
