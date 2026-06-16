@@ -1,11 +1,11 @@
-from numpy import empty, linspace
+from numpy import empty, ndarray, linspace
 
 from PaquetOndeGauss1d4J import GaussWP
 
 
 def wave_function(
     nx: int, nt: int, L: float, T: float, k0: float, a: float
-) -> np.ndarray:
+) -> ndarray:
     """A wave function as a 2D table.
 
     Params:
