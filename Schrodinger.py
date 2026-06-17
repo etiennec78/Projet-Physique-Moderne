@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt
-from numpy import argmax, empty, ndarray, linspace, searchsorted
+from numpy import argmax, empty, ndarray, linspace, searchsorted, zeros
 
 from Const import hbar, m
 from Derivation import derive
@@ -147,7 +147,7 @@ class waveFunction:
         idx_end = searchsorted(self._x_tab, x_end)
 
         for i in range(len(self._t_tab)):
-            proba = abs(self._wave_table[i])**2
+            proba = abs(self._wave_table[i]) ** 2
 
             # Find the time of entry (t_in)
             if t_in is None:
@@ -175,6 +175,29 @@ class waveFunction:
         return None
 
 
+def create_potential_barrier(
+    nx: int, L: float, V0: float, x_start: float, x_end: float
+) -> ndarray:
+    """Create an array representing the potential function V(x).
+
+    Params:
+    nx: amount of space points
+    L: total length of the space interval
+    V0: potential energy
+    x_start: The start of the barrier
+    x_end: The end of the barrier
+
+    Returns:
+    The V(X) array
+    """
+    x_tab = linspace(-L / 2, L / 2, nx)
+    V_tab = zeros(nx)
+    for i, x in enumerate(x_tab):
+        if x_start <= x <= x_end:
+            V_tab[i] = V0
+    return V_tab
+
+
 if __name__ == "__main__":
     K = 5e9
     V0 = 0
@@ -189,7 +212,8 @@ if __name__ == "__main__":
 
     A = X_END_BAR - X_START_BAR
 
-    wave_function = waveFunction(NX, NT, LENGTH, DURATION, K, A, V0)
+    V_barrier = create_potential_barrier(NX, LENGTH, V0, X_START_BAR, X_END_BAR)
+    wave_function = waveFunction(NX, NT, LENGTH, DURATION, K, A, V_barrier)
     print(wave_function.calculate_travel_time(12))
     print(wave_function.calculate_crossing_time(X_START_BAR, X_END_BAR))
     wave_function.plot()
