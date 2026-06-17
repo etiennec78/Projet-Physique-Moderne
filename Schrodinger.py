@@ -124,7 +124,7 @@ class waveFunction:
         start_x = self._x_tab[start_idx]
 
         # Set the target
-        target_x = start_x + distance$
+        target_x = start_x + distance
 
         # Travel the time to see when the maximum passes by the target
         for i in range(len(self._t_tab)):
