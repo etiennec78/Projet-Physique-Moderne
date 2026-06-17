@@ -129,9 +129,14 @@ def PlotFunction(
     plotWaves(amp, k, delta_k, omega, t, range_, filter_, values, sum_, ax)
 
     # Plot the wave representing the sum of waves
-    ax.plot(list(range_), sum_)
+    ax.plot(list(range_), sum_, label="Somme")
 
     plotEnvelop(amp, delta_k, range_, filter_, values, ax)
+
+    ax.set_title("Superposition d'ondes planes")
+    ax.set_xlabel("Position x (m)")
+    ax.set_ylabel("Amplitude")
+    ax.legend()
 
     plt.show()
 

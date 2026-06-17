@@ -118,6 +118,10 @@ class waveFunction:
         fig, ax = plt.subplots()
         for i in range(len(self._t_tab)):
             ax.plot(self._x_tab, abs(self._wave_table[i]))
+        ax.set_title("Évolution temporelle de la fonction d'onde")
+        ax.set_xlabel("Position x (m)")
+        ax.set_ylabel("Amplitude |ψ(x, t)|")
+        ax.legend()
         plt.show()
 
     def calculate_travel_time(self, distance: float) -> float | None:

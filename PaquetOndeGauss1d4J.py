@@ -26,8 +26,12 @@ def plotGaussWP(k0: float, a: float, t: float, range_: ndarray) -> None:
         values_imag.append(imag(y))
 
     range_list = list(range_)
-    ax.plot(range_list, values_real)
-    ax.plot(range_list, values_imag)
+    ax.plot(range_list, values_real, label="Partie réelle")
+    ax.plot(range_list, values_imag, label="Partie imaginaire")
+    ax.set_title("Paquet d'onde gaussien")
+    ax.set_xlabel("Position x (m)")
+    ax.set_ylabel("Amplitude")
+    ax.legend()
     plt.show()
 
 
