@@ -29,7 +29,7 @@ class waveFunction:
         self.wave_table, self._x_tab, self._t_tab = self._initWaveFunction(
             nx, nt, L, T, k0, a
         )
-        self.wave_table = self._completeWaveFunction(V0)
+        self._completeWaveFunction(V0)
 
     def _initWaveFunction(
         self, nx: int, nt: int, L: float, T: float, k0: float, a: float
