@@ -18,6 +18,8 @@ def waveFunction(
     k0: initial wave number
     a: width of the wave packet
     V0: potential energy
+
+    Returns: The wave function as a numpy array [nt][nx]
     """
 
     # Initialize and fill in the wave function table
@@ -74,6 +76,8 @@ def completeWaveFunction(
     x_tab: the list of spacial values
     t_tab: the list of time values
     V0: potential energy
+
+    Returns: The 2D table containing the wave function values
     """
 
     # Get the length of time and position axis
