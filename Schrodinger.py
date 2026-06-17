@@ -1,3 +1,4 @@
+from matplotlib import pyplot as plt
 from numpy import empty, ndarray, linspace
 
 from Const import hbar, m
@@ -8,7 +9,7 @@ from PaquetOndeGauss1d4J import GaussWP
 class waveFunction:
     """Class to create a wave function table and fill it with values"""
 
-    wave_table: ndarray
+    _wave_table: ndarray
     _x_tab: ndarray
     _t_tab: ndarray
 
@@ -26,7 +27,7 @@ class waveFunction:
         a: width of the wave packet
         V0: potential energy
         """
-        self.wave_table, self._x_tab, self._t_tab = self._initWaveFunction(
+        self._wave_table, self._x_tab, self._t_tab = self._initWaveFunction(
             nx, nt, L, T, k0, a
         )
         self._completeWaveFunction(V0)
@@ -52,13 +53,13 @@ class waveFunction:
         t_tab = linspace(0, T, nt)
 
         # Generate a 2D tab containing random data
-        _wave_table = empty((nt, nx), dtype=complex)  # Initialize as complex for WP
+        __wave_table = empty((nt, nx), dtype=complex)  # Initialize as complex for WP
 
         # Fill in values in the first line (t=0)
         for j, x in enumerate(x_tab):
-            _wave_table[0, j] = GaussWP(k0, a, x, 0)
+            __wave_table[0, j] = GaussWP(k0, a, x, 0)
 
-        return _wave_table, x_tab, t_tab
+        return __wave_table, x_tab, t_tab
 
     def _completeWaveFunction(self, V0: float) -> ndarray:
         """Complete the wave function table by calculating the values at t>0.
@@ -68,18 +69,18 @@ class waveFunction:
         """
 
         # Get the length of time and position axis
-        nt, nx = self.wave_table.shape
+        nt, nx = self._wave_table.shape
 
         # Set the edge values to 0 since we cannot derive them
-        self.wave_table[:, 0:2] = 0
-        self.wave_table[:, -2:] = 0
+        self._wave_table[:, 0:2] = 0
+        self._wave_table[:, -2:] = 0
 
         # Get the size of dt
         dt = self._t_tab[1] - self._t_tab[0]
 
         # For each time line
         for n in range(0, nt - 1):
-            current_y = self.wave_table[n, :]
+            current_y = self._wave_table[n, :]
 
             # For each position
             for j in range(2, nx - 2):
@@ -88,11 +89,20 @@ class waveFunction:
 
                 # 2. Schrödinger equation
                 kinetic = -(hbar**2 / (2 * m)) * d2psi_dx2
-                potential = V0 * self.wave_table[n, j]
+                potential = V0 * self._wave_table[n, j]
                 dpsi_dt = (kinetic + potential) / (1j * hbar)
 
                 # 3. Euler method to get the next position
-                self.wave_table[n + 1, j] = self.wave_table[n, j] + dt * dpsi_dt
+                self._wave_table[n + 1, j] = self._wave_table[n, j] + dt * dpsi_dt
+
+        return self._wave_table
+
+    def plot(self) -> None:
+        """Plot the wave function."""
+        fig, ax = plt.subplots()
+        for i in range(len(self._t_tab)):
+            ax.plot(self._x_tab, abs(self._wave_table[i]))
+        plt.show()
 
 
 if __name__ == "__main__":
@@ -106,3 +116,4 @@ if __name__ == "__main__":
     DURATION = 1e-15
 
     wave_function = waveFunction(NX, NT, LENGTH, DURATION, K, A, V0)
+    wave_function.plot()
