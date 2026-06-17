@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt
-from numpy import argmax, empty, ndarray, linspace
+from numpy import argmax, empty, ndarray, linspace, searchsorted
 
 from Const import hbar, m
 from Derivation import derive
@@ -138,11 +138,48 @@ class waveFunction:
         # If the particule has not reached the destination
         return None
 
+    def calculate_crossing_time(self, x_start: float, x_end: float) -> float | None:
+        """Calculate the time to go through a barrier."""
+        t_in = None
+        t_out = None
+
+        # Get the index of the closest value before x_end
+        idx_end = searchsorted(self._x_tab, x_end)
+
+        for i in range(len(self._t_tab)):
+            proba = abs(self._wave_table[i])**2
+
+            # Find the time of entry (t_in)
+            if t_in is None:
+                global_max_idx = argmax(proba)
+                if self._x_tab[global_max_idx] >= x_start:
+                    t_in = self._t_tab[i]
+
+            # Find the time of exit (t_out)
+            elif t_out is None:
+                # Only keep the next values to avoid searching in the reflected values
+                proba_transmitted = proba[idx_end:]
+
+                if len(proba_transmitted) > 0:
+                    local_max_idx = argmax(proba_transmitted)
+
+                    # Filter out waves that did not go through yet and noise
+                    if local_max_idx > 2 and proba_transmitted[local_max_idx] > 1e-10:
+                        t_out = self._t_tab[i]
+                        break
+
+        # Calculate the time in the barrier
+        if t_in is not None and t_out is not None:
+            return t_out - t_in
+
+        return None
+
 
 if __name__ == "__main__":
     K = 5e9
-    A = 1.5e-8
     V0 = 0
+    X_START_BAR = 10e-9
+    X_END_BAR = 15e-9
 
     NX = 500
     NT = 2000
@@ -150,6 +187,9 @@ if __name__ == "__main__":
     DURATION = 1e-15
     TARGET_DISTANCE = 10e-9
 
+    A = X_END_BAR - X_START_BAR
+
     wave_function = waveFunction(NX, NT, LENGTH, DURATION, K, A, V0)
     print(wave_function.calculate_travel_time(12))
+    print(wave_function.calculate_crossing_time(X_START_BAR, X_END_BAR))
     wave_function.plot()
