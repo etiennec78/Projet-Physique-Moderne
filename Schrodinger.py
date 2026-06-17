@@ -5,120 +5,104 @@ from Derivation import derive
 from PaquetOndeGauss1d4J import GaussWP
 
 
-def waveFunction(
-    nx: int, nt: int, L: float, T: float, k0: float, a: float, V0: float
-) -> ndarray:
-    """Initialize and fill a packet function as a 2D table
+class waveFunction:
+    """Class to create a wave function table and fill it with values"""
 
-    Params:
-    nx: amount of space points
-    nt: amount of time points
-    L: total length of the space interval
-    T: total duration of the simulation
-    k0: initial wave number
-    a: width of the wave packet
-    V0: potential energy
+    wave_table: ndarray
+    _x_tab: ndarray
+    _t_tab: ndarray
 
-    Returns: The wave function as a numpy array [nt][nx]
-    """
+    def __init__(
+        self, nx: int, nt: int, L: float, T: float, k0: float, a: float, V0: float
+    ) -> None:
+        """Initialize and fill a packet function as a 2D table
 
-    # Initialize and fill in the wave function table
-    wave_table, space_table, time_table = initWaveFunction(
-        nx, nt, L, T, k0, a
-    )
-    wave_table = completeWaveFunction(wave_table, space_table, time_table, V0)
+        Params:
+        nx: amount of space points
+        nt: amount of time points
+        L: total length of the space interval
+        T: total duration of the simulation
+        k0: initial wave number
+        a: width of the wave packet
+        V0: potential energy
+        """
+        self.wave_table, self._x_tab, self._t_tab = self.initWaveFunction(
+            nx, nt, L, T, k0, a
+        )
+        self.wave_table = self.completeWaveFunction(V0)
 
-    return wave_table
+    def initWaveFunction(
+        self, nx: int, nt: int, L: float, T: float, k0: float, a: float
+    ) -> None:
+        """Initialize a wave packet function as a 2D table at t=0.
 
+        Params:
+        nx: amount of space points
+        nt: amount of time points
+        L: total length of the space interval
+        T: total duration of the simulation
+        k0: initial wave number
+        a: width of the wave packet
+        """
+        if nx < 1 or nt < 1:
+            raise ValueError("The amount of lines and columns must be at least 1.")
 
-def initWaveFunction(
-    nx: int, nt: int, L: float, T: float, k0: float, a: float
-) -> (ndarray, ndarray, ndarray):
-    """Initialize a wave packet function as a 2D table at t=0.
+        # Generate lists containing x and t values
+        x_tab = linspace(-L / 2, L / 2, nx)
+        t_tab = linspace(0, T, nt)
 
-    Params:
-    nx: amount of space points
-    nt: amount of time points
-    L: total length of the space interval
-    T: total duration of the simulation
-    k0: initial wave number
-    a: width of the wave packet
+        # Generate a 2D tab containing random data
+        _wave_table = empty((nt, nx), dtype=complex)  # Initialize as complex for WP
 
-    Returns:
-    * The wave function as a numpy array [nt][nx]
-    * The list of spacial values
-    * The list of time values
-    """
-    if nx < 1 or nt < 1:
-        raise ValueError("The amount of lines and columns must be at least 1.")
+        # Fill in values in the first line (t=0)
+        for j, x in enumerate(x_tab):
+            _wave_table[0, j] = GaussWP(k0, a, x, 0)
 
-    # Generate lists containing x and t values
-    x_tab = linspace(-L / 2, L / 2, nx)
-    t_tab = linspace(0, T, nt)
+        return _wave_table, x_tab, t_tab
 
-    # Generate a 2D tab containing random data
-    wave_table = empty((nt, nx), dtype=complex)  # Initialize as complex for WP
+    def completeWaveFunction(self, V0: float) -> ndarray:
+        """Complete the wave function table by calculating the values at t>0.
 
-    # Fill in values in the first line (t=0)
-    for j, x in enumerate(x_tab):
-        wave_table[0, j] = GaussWP(k0, a, x, 0)
+        Params:
+        V0: potential energy
+        """
 
-    return wave_table, x_tab, t_tab
+        # Get the length of time and position axis
+        nt, nx = self.wave_table.shape
 
+        # Set the edge values to 0 since we cannot derive them
+        self.wave_table[:, 0:2] = 0
+        self.wave_table[:, -2:] = 0
 
-def completeWaveFunction(
-    wave_table: ndarray, x_tab: ndarray, t_tab: ndarray, V0: float
-) -> ndarray:
-    """Complete the wave function table by calculating the values at t>0.
+        # Get the size of dt
+        dt = self._t_tab[1] - self._t_tab[0]
 
-    Params:
-    wave_table: the 2D table containing the wave function values
-    x_tab: the list of spacial values
-    t_tab: the list of time values
-    V0: potential energy
+        # For each time line
+        for n in range(0, nt - 1):
+            current_y = self.wave_table[n, :]
 
-    Returns: The 2D table containing the wave function values
-    """
+            # For each position
+            for j in range(2, nx - 2):
+                # Get the second position derivative
+                d2psi_dx2 = derive(self._x_tab, current_y, j, 2)
 
-    # Get the length of time and position axis
-    nt, nx = wave_table.shape
+                # 2. Schrödinger equation
+                kinetic = -(hbar**2 / (2 * m)) * d2psi_dx2
+                potential = V0 * self.wave_table[n, j]
+                dpsi_dt = (kinetic + potential) / (1j * hbar)
 
-    # Set the edge values to 0 since we cannot derive them
-    wave_table[:, 0:2] = 0
-    wave_table[:, -2:] = 0
-
-    # Get the size of dt
-    dt = t_tab[1] - t_tab[0]
-
-    # For each time line
-    for n in range(0, nt - 1):
-        current_y = wave_table[n, :]
-
-        # For each position
-        for j in range(2, nx - 2):
-            # Get the second position derivative
-            d2psi_dx2 = derive(x_tab, current_y, j, 2)
-
-            # 2. Schrödinger equation
-            kinetic = -(hbar**2 / (2 * m)) * d2psi_dx2
-            potential = V0 * wave_table[n, j]
-            dpsi_dt = (kinetic + potential) / (1j * hbar)
-
-            # 3. Euler method to get the next position
-            wave_table[n + 1, j] = wave_table[n, j] + dt * dpsi_dt
-
-    return wave_table
+                # 3. Euler method to get the next position
+                self.wave_table[n + 1, j] = self.wave_table[n, j] + dt * dpsi_dt
 
 
 if __name__ == "__main__":
     K = 5e9
     A = 1.5e-8
+    V0 = 0
 
     NX = 500
     NT = 2000
     LENGTH = 80e-9
     DURATION = 1e-15
 
-    wave_table, space_table, time_table = initWaveFunction(
-        NX, NT, LENGTH, DURATION, K, A
-    )
+    wave_function = waveFunction(NX, NT, LENGTH, DURATION, K, A, V0)
