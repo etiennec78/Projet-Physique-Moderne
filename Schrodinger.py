@@ -41,7 +41,7 @@ class waveFunction:
 
     def _initWaveFunction(
         self, nx: int, nt: int, L: float, T: float, k0: float, a: float
-    ) -> None:
+    ) -> (ndarray, ndarray, ndarray):
         """Initialize a wave packet function as a 2D table at t=0.
 
         Params:
@@ -51,6 +51,11 @@ class waveFunction:
         T: total duration of the simulation
         k0: initial wave number
         a: width of the wave packet
+
+        Returns:
+        * The wave function as a numpy array [nt][nx]
+        * The list of spacial values
+        * The list of time values
         """
         if nx < 1 or nt < 1:
             raise ValueError("The amount of lines and columns must be at least 1.")
