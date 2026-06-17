@@ -26,12 +26,12 @@ class waveFunction:
         a: width of the wave packet
         V0: potential energy
         """
-        self.wave_table, self._x_tab, self._t_tab = self.initWaveFunction(
+        self.wave_table, self._x_tab, self._t_tab = self._initWaveFunction(
             nx, nt, L, T, k0, a
         )
-        self.wave_table = self.completeWaveFunction(V0)
+        self.wave_table = self._completeWaveFunction(V0)
 
-    def initWaveFunction(
+    def _initWaveFunction(
         self, nx: int, nt: int, L: float, T: float, k0: float, a: float
     ) -> None:
         """Initialize a wave packet function as a 2D table at t=0.
@@ -60,7 +60,7 @@ class waveFunction:
 
         return _wave_table, x_tab, t_tab
 
-    def completeWaveFunction(self, V0: float) -> ndarray:
+    def _completeWaveFunction(self, V0: float) -> ndarray:
         """Complete the wave function table by calculating the values at t>0.
 
         Params:
