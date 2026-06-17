@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt
-from numpy import empty, ndarray, linspace
+from numpy import argmax, empty, ndarray, linspace
 
 from Const import hbar, m
 from Derivation import derive
@@ -14,7 +14,14 @@ class waveFunction:
     _t_tab: ndarray
 
     def __init__(
-        self, nx: int, nt: int, L: float, T: float, k0: float, a: float, V0: float | ndarray
+        self,
+        nx: int,
+        nt: int,
+        L: float,
+        T: float,
+        k0: float,
+        a: float,
+        V0: float | ndarray,
     ) -> None:
         """Initialize and fill a packet function as a 2D table
 
@@ -108,6 +115,29 @@ class waveFunction:
             ax.plot(self._x_tab, abs(self._wave_table[i]))
         plt.show()
 
+    def calculate_travel_time(self, distance: float) -> float | None:
+        """Calculate the time it takes for a particule to travel a distance."""
+
+        # Find the initial position (maximum probability at t=0)
+        initial_prob = abs(self._wave_table[0]) ** 2
+        start_idx = argmax(initial_prob)
+        start_x = self._x_tab[start_idx]
+
+        # Set the target
+        target_x = start_x + distance$
+
+        # Travel the time to see when the maximum passes by the target
+        for i in range(len(self._t_tab)):
+            current_prob = abs(self._wave_table[i]) ** 2
+            current_idx = argmax(current_prob)
+            current_x = self._x_tab[current_idx]
+
+            if current_x >= target_x:
+                return self._t_tab[i]
+
+        # If the particule has not reached the destination
+        return None
+
 
 if __name__ == "__main__":
     K = 5e9
@@ -118,6 +148,8 @@ if __name__ == "__main__":
     NT = 2000
     LENGTH = 80e-9
     DURATION = 1e-15
+    TARGET_DISTANCE = 10e-9
 
     wave_function = waveFunction(NX, NT, LENGTH, DURATION, K, A, V0)
+    print(wave_function.calculate_travel_time(12))
     wave_function.plot()
