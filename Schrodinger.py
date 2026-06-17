@@ -14,7 +14,7 @@ class waveFunction:
     _t_tab: ndarray
 
     def __init__(
-        self, nx: int, nt: int, L: float, T: float, k0: float, a: float, V0: float
+        self, nx: int, nt: int, L: float, T: float, k0: float, a: float, V0: float | ndarray
     ) -> None:
         """Initialize and fill a packet function as a 2D table
 
@@ -25,7 +25,7 @@ class waveFunction:
         T: total duration of the simulation
         k0: initial wave number
         a: width of the wave packet
-        V0: potential energy
+        V0: potential energy (a float constant or function)
         """
         self._wave_table, self._x_tab, self._t_tab = self._initWaveFunction(
             nx, nt, L, T, k0, a
@@ -61,12 +61,13 @@ class waveFunction:
 
         return __wave_table, x_tab, t_tab
 
-    def _completeWaveFunction(self, V0: float) -> ndarray:
+    def _completeWaveFunction(self, V0: float | ndarray) -> ndarray:
         """Complete the wave function table by calculating the values at t>0.
 
         Params:
-        V0: potential energy
+        V0: potential energy (a float constant or function)
         """
+        V0_is_array = isinstance(V0, ndarray)
 
         # Get the length of time and position axis
         nt, nx = self._wave_table.shape
@@ -87,12 +88,15 @@ class waveFunction:
                 # Get the second position derivative
                 d2psi_dx2 = derive(self._x_tab, current_y, j, 2)
 
-                # 2. Schrödinger equation
+                # Get the value of V0
+                V0_value = V0[j] if V0_is_array else V0
+
+                # Schrödinger equation
                 kinetic = -(hbar**2 / (2 * m)) * d2psi_dx2
-                potential = V0 * self._wave_table[n, j]
+                potential = V0_value * self._wave_table[n, j]
                 dpsi_dt = (kinetic + potential) / (1j * hbar)
 
-                # 3. Euler method to get the next position
+                # Euler method to get the next position
                 self._wave_table[n + 1, j] = self._wave_table[n, j] + dt * dpsi_dt
 
         return self._wave_table
