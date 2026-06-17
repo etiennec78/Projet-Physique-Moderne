@@ -1,7 +1,23 @@
-from numpy import arange
+from numpy import arange, ndarray
 
 
-def derive(x_values: list, y_values: list, i: int, degree: int = 1) -> float:
+def derive(
+    x_values: ndarray,
+    y_values: ndarray,
+    i: int,
+    degree: int = 1,
+) -> float | complex:
+    """Approximate the derivative of a discrete function at one index.
+
+    Params:
+    x_values: sample positions
+    y_values: sample values at each position
+    i: index of the point to derive
+    degree: derivative order
+
+    Returns:
+    The estimated derivative value at index i.
+    """
     if len(x_values) != len(y_values):
         raise ValueError("Both lists should have the same length")
 

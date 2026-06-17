@@ -5,6 +5,17 @@ from Const import hbar, m
 
 
 def GaussWP(k0: float, a: float, x: float, t: float) -> complex:
+    """Compute a one-dimensional Gaussian wave packet.
+
+    Params:
+    k0: central wave number
+    a: packet width
+    x: position
+    t: time
+
+    Returns:
+    The complex wave-function value at (x, t).
+    """
     amp = (2 / (pi * a**2)) ** (1 / 4)
     omega = hbar * k0**2 / (2 * m)
 
@@ -15,6 +26,14 @@ def GaussWP(k0: float, a: float, x: float, t: float) -> complex:
 
 
 def plotGaussWP(k0: float, a: float, t: float, range_: ndarray) -> None:
+    """Plot the real and imaginary parts of a Gaussian wave packet.
+
+    Params:
+    k0: central wave number
+    a: packet width
+    t: time
+    range_: x values to evaluate
+    """
     fig, ax = plt.subplots()
     values_real = []
     values_imag = []
