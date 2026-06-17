@@ -1,7 +1,7 @@
 from numpy import arange
 
 
-def derive(x_values: list, y_values: list, i: int) -> float:
+def derive(x_values: list, y_values: list, i: int, degree: int = 1) -> float:
     if len(x_values) != len(y_values):
         raise ValueError("Both lists should have the same length")
 
@@ -13,26 +13,24 @@ def derive(x_values: list, y_values: list, i: int) -> float:
             "Values are missing to the left or the right of this index to derive"
         )
 
+    if degree == 0:
+        return y_values[i]
+
+    # Get the index of previous and next point
     a = i - 1
     b = i + 1
 
+    # Get the associated x values
     x_a = x_values[a]
     x_b = x_values[b]
-    y_a = y_values[a]
-    y_b = y_values[b]
 
-    return (y_b - y_a) / (x_b - x_a)
-
-
-def second_derivative(x_values: list, y_values: list, i: int) -> float:
-    a = i - 1
-    b = i + 1
-
-    y_a = derive(x_values, y_values, a)
-    y_b = derive(x_values, y_values, b)
-
-    x_a = x_values[a]
-    x_b = x_values[b]
+    # Get the associated y values
+    if degree == 1:
+        y_a = y_values[a]
+        y_b = y_values[b]
+    else:
+        y_a = derive(x_values, y_values, a, degree - 1)
+        y_b = derive(x_values, y_values, b, degree - 1)
 
     return (y_b - y_a) / (x_b - x_a)
 
@@ -45,7 +43,7 @@ if __name__ == "__main__":
 
     # Double deriving x²
     x_values = arange(1, 100, 0.1)
-    print(second_derivative(x_values, y_values, 100))
+    print(derive(x_values, y_values, 100, 2))
 
     # Deriving 2x
     y_values = 2 * x_values
