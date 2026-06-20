@@ -115,8 +115,17 @@ class WaveFunction:
     def plot(self) -> None:
         """Plot the wave function."""
         fig, ax = plt.subplots()
-        for i in range(len(self._t_tab)):
-            ax.plot(self._x_tab, abs(self._wave_table[i]))
+
+        nt = len(self._t_tab)
+        step = max(1, nt // 8)
+        for i in range(0, nt, step):
+            ax.plot(
+                self._x_tab,
+                abs(self._wave_table[i]),
+            )
+
+        ax.axvspan(10e-9, 15e-9, color="grey", alpha=0.3, label="Barrière")
+
         ax.set_title("Évolution temporelle de la fonction d'onde")
         ax.set_xlabel("Position x (m)")
         ax.set_ylabel("Amplitude |ψ(x, t)|")
@@ -208,14 +217,14 @@ def create_potential_barrier(
 
 if __name__ == "__main__":
     K = 5e9
-    V0 = 0
+    V0 = 1.5 * 1.602176634e-19
     X_START_BAR = 10e-9
     X_END_BAR = 15e-9
 
     NX = 500
-    NT = 2000
+    NT = 6000
     LENGTH = 80e-9
-    DURATION = 1e-15
+    DURATION = 2.2e-14
     TARGET_DISTANCE = 10e-9
 
     A = X_END_BAR - X_START_BAR
