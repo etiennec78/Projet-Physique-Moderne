@@ -291,11 +291,6 @@ if __name__ == "__main__":
 
     # --- Influence of parameters ---
 
-    RANGE_START = A
-    RANGE_END = 2 * A
-    RANGE_STEP = A / 10
-    range_ = arange(RANGE_START, RANGE_END, RANGE_STEP)
-
     # Influence of a on calculate_travel_time
     ATTRIBUTE = "a"
     METHOD = "calculate_travel_time"
