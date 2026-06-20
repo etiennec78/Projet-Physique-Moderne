@@ -318,7 +318,11 @@ if __name__ == "__main__":
     RANGE_END = 2 * V0
     RANGE_STEP = V0 / 10
     range_ = arange(RANGE_START, RANGE_END, RANGE_STEP)
+    potential_range = [
+        create_potential_barrier(NX, LENGTH, v0, X_START_BAR, X_END_BAR)
+        for v0 in range_
+    ]
 
     plot_attr_influence(
-        wave_data, ATTRIBUTE, range_, METHOD, X_START_BAR, X_END_BAR
+        wave_data, ATTRIBUTE, potential_range, METHOD, X_START_BAR, X_END_BAR
     )
