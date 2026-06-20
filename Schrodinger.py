@@ -160,30 +160,29 @@ class WaveFunction:
         t_in = None
         t_out = None
 
-        # Get the index of the closest value before x_end
+        # Get the indexes delimiting the start and the end of the barrier
+        idx_start = searchsorted(self._x_tab, x_start)
         idx_end = searchsorted(self._x_tab, x_end)
+
+        peak_probability = max(abs(self._wave_table[0]) ** 2)
+        threshold = peak_probability * 1e-6  # Filter out noise
 
         for i in range(len(self._t_tab)):
             proba = abs(self._wave_table[i]) ** 2
 
+            barrier_prob = proba[idx_start:idx_end]
+            transmitted_prob = proba[idx_end:]
+
             # Find the time of entry (t_in)
             if t_in is None:
-                global_max_idx = argmax(proba)
-                if self._x_tab[global_max_idx] >= x_start:
+                if len(barrier_prob) > 0 and barrier_prob.max() > threshold:
                     t_in = self._t_tab[i]
 
             # Find the time of exit (t_out)
             elif t_out is None:
-                # Only keep the next values to avoid searching in the reflected values
-                proba_transmitted = proba[idx_end:]
-
-                if len(proba_transmitted) > 0:
-                    local_max_idx = argmax(proba_transmitted)
-
-                    # Filter out waves that did not go through yet and noise
-                    if local_max_idx > 2 and proba_transmitted[local_max_idx] > 1e-10:
-                        t_out = self._t_tab[i]
-                        break
+                if len(transmitted_prob) > 0 and transmitted_prob.max() > threshold:
+                    t_out = self._t_tab[i]
+                    break
 
         # Calculate the time in the barrier
         if t_in is not None and t_out is not None:
