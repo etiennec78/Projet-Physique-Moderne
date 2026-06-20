@@ -121,10 +121,7 @@ class WaveFunction:
         nt = len(self._t_tab)
         step = max(1, nt // 8)
         for i in range(0, nt, step):
-            ax.plot(
-                self._x_tab,
-                abs(self._wave_table[i])
-            )
+            ax.plot(self._x_tab, abs(self._wave_table[i]))
 
         if isinstance(self._data.V, ndarray):
             ax_potential.plot(self._x_tab, self._data.V, label="Potentiel V(x)")
@@ -320,9 +317,7 @@ if __name__ == "__main__":
     RANGE_STEP = 1e-9
     range_ = arange(RANGE_START, RANGE_END, RANGE_STEP)
 
-    plot_attr_influence(
-        wave_data, ATTRIBUTE, range_, METHOD, TARGET_DISTANCE
-    )
+    plot_attr_influence(wave_data, ATTRIBUTE, range_, METHOD, TARGET_DISTANCE)
 
     # Influence of V on calculate_crossing_time
     ATTRIBUTE = "V"
