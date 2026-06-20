@@ -42,6 +42,7 @@ class WaveFunction:
         """Initialize and fill a packet function as a 2D table"""
         self._wave_table, self._x_tab, self._t_tab = self._initWaveFunction(data)
         self._completeWaveFunction(data.V)
+        self._data = data
 
     def _initWaveFunction(self, data: WaveFunctionData) -> (ndarray, ndarray, ndarray):
         """Initialize a wave packet function as a 2D table at t=0.
@@ -115,21 +116,23 @@ class WaveFunction:
     def plot(self) -> None:
         """Plot the wave function."""
         fig, ax = plt.subplots()
+        ax_potential = ax.twinx()
 
         nt = len(self._t_tab)
         step = max(1, nt // 8)
         for i in range(0, nt, step):
             ax.plot(
                 self._x_tab,
-                abs(self._wave_table[i]),
+                abs(self._wave_table[i])
             )
 
-        ax.axvspan(10e-9, 15e-9, color="grey", alpha=0.3, label="Barrière")
+        if isinstance(self._data.V, ndarray):
+            ax_potential.plot(self._x_tab, self._data.V, label="Potentiel V(x)")
+            ax_potential.set_ylabel("Potentiel V(x) (J)")
 
         ax.set_title("Évolution temporelle de la fonction d'onde")
         ax.set_xlabel("Position x (m)")
         ax.set_ylabel("Amplitude |ψ(x, t)|")
-        ax.legend()
         plt.show()
 
     def calculate_travel_time(self, distance: float) -> float | None:
