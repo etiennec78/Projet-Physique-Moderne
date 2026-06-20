@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from matplotlib import pyplot as plt
-from numpy import argmax, empty, ndarray, linspace, searchsorted, zeros
+from numpy import arange, argmax, empty, ndarray, linspace, searchsorted, zeros
 
 from Const import hbar, m
 from Derivation import derive
@@ -215,7 +215,58 @@ def create_potential_barrier(
     return V_tab
 
 
+def plot_attr_influence(
+    data: WaveFunctionData,
+    attribute: str,
+    range_: ndarray,
+    method_name: str,
+    *args: list,
+):
+    """Plot the influence of a parameter on the wave function
+
+    Parameters:
+    data: The dataclass of the wave function
+    attribute: The targeted attribute to vary
+    range_: The range of values that the attribute will take
+    method_name: The wave function method to call to get the y value
+    *args: The args to give to the method on call
+    """
+    values: list(float) = []
+
+    for new_val in range_:
+        # Replace targeted attribute with values from the range
+        setattr(data, attribute, new_val)
+        wave_function = WaveFunction(data)
+
+        # Apply the requested method and store results
+        method = getattr(wave_function, method_name)
+        value = method(*args)
+        values.append(value)
+
+    # Plot a graph showing influence of this attribute
+    fig, ax = plt.subplots()
+    valid_x = []
+    valid_y = []
+    for i, value in enumerate(values):
+        # Don't draw the point if the value returned is None
+        if value is not None:
+            valid_x.append(range_[i])
+            valid_y.append(value)
+
+    ax.plot(valid_x, valid_y)
+
+    # Set the legend
+    ax.set_title(f"Influence du paramètre {attribute} sur la fonction {method_name}")
+    ax.set_xlabel(f"Valeur de {attribute}")
+    ax.set_ylabel(f"Valeur retournée par {method_name}")
+    ax.legend()
+
+    plt.show()
+
+
 if __name__ == "__main__":
+    # --- Ploting a wave function ---
+
     K = 5e9
     V0 = 1.5 * 1.602176634e-19
     X_START_BAR = 10e-9
@@ -232,7 +283,23 @@ if __name__ == "__main__":
     V_barrier = create_potential_barrier(NX, LENGTH, V0, X_START_BAR, X_END_BAR)
     wave_data = WaveFunctionData(NX, NT, LENGTH, DURATION, K, A, V_barrier)
     wave_function = WaveFunction(wave_data)
-
-    print(wave_function.calculate_travel_time(12))
-    print(wave_function.calculate_crossing_time(X_START_BAR, X_END_BAR))
     wave_function.plot()
+
+    # --- Calculating travel & cross times ---
+
+    print(wave_function.calculate_travel_time(TARGET_DISTANCE))
+    print(wave_function.calculate_crossing_time(X_START_BAR, X_END_BAR))
+
+    # --- Influence of parameters ---
+
+    RANGE_START = A
+    RANGE_END = 2 * A
+    RANGE_STEP = A / 10
+
+    ATTRIBUTE = "a"
+    METHOD = "calculate_travel_time"
+
+    range_ = arange(RANGE_START, RANGE_END, RANGE_STEP)
+    plot_attr_influence(
+        wave_data, ATTRIBUTE, range_, METHOD, TARGET_DISTANCE
+    )
