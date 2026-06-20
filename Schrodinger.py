@@ -136,7 +136,11 @@ class WaveFunction:
         plt.show()
 
     def calculate_travel_time(self, distance: float) -> float | None:
-        """Calculate the time it takes for a particule to travel a distance."""
+        """Calculate the time it takes for a particule to travel a distance.
+
+        Params:
+        distance: the distance to travel (in meters)
+        """
 
         # Find the initial position of the packet
         initial_prob = abs(self._wave_table[0]) ** 2
@@ -165,7 +169,12 @@ class WaveFunction:
         return None
 
     def calculate_crossing_time(self, x_start: float, x_end: float) -> float | None:
-        """Calculate the time to go through a barrier."""
+        """Calculate the time to go through a barrier.
+
+        Params:
+        x_start: The position start of the barrier
+        x_end: The position stop of the barrier
+        """
         t_in = None
         t_out = None
 
