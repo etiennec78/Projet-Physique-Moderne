@@ -295,11 +295,30 @@ if __name__ == "__main__":
     RANGE_START = A
     RANGE_END = 2 * A
     RANGE_STEP = A / 10
+    range_ = arange(RANGE_START, RANGE_END, RANGE_STEP)
 
+    # Influence of a on calculate_travel_time
     ATTRIBUTE = "a"
     METHOD = "calculate_travel_time"
 
+    RANGE_START = A
+    RANGE_END = 2 * A
+    RANGE_STEP = A / 10
     range_ = arange(RANGE_START, RANGE_END, RANGE_STEP)
+
     plot_attr_influence(
         wave_data, ATTRIBUTE, range_, METHOD, TARGET_DISTANCE
+    )
+
+    # Influence of V on calculate_crossing_time
+    ATTRIBUTE = "V"
+    METHOD = "calculate_crossing_time"
+
+    RANGE_START = V0
+    RANGE_END = 2 * V0
+    RANGE_STEP = V0 / 10
+    range_ = arange(RANGE_START, RANGE_END, RANGE_STEP)
+
+    plot_attr_influence(
+        wave_data, ATTRIBUTE, range_, METHOD, X_START_BAR, X_END_BAR
     )
