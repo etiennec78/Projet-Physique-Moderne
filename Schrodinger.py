@@ -135,19 +135,25 @@ class WaveFunction:
     def calculate_travel_time(self, distance: float) -> float | None:
         """Calculate the time it takes for a particule to travel a distance."""
 
-        # Find the initial position (maximum probability at t=0)
+        # Find the initial position of the packet
         initial_prob = abs(self._wave_table[0]) ** 2
-        start_idx = argmax(initial_prob)
-        start_x = self._x_tab[start_idx]
+        initial_total = initial_prob.sum()
+        if initial_total == 0:
+            return None
+
+        start_x = float((self._x_tab * initial_prob).sum() / initial_total)
 
         # Set the target
         target_x = start_x + distance
 
-        # Travel the time to see when the maximum passes by the target
+        # Travel the time to see when the packet mean position reaches the target
         for i in range(len(self._t_tab)):
             current_prob = abs(self._wave_table[i]) ** 2
-            current_idx = argmax(current_prob)
-            current_x = self._x_tab[current_idx]
+            current_total = current_prob.sum()
+            if current_total == 0:
+                continue
+
+            current_x = float((self._x_tab * current_prob).sum() / current_total)
 
             if current_x >= target_x:
                 return self._t_tab[i]
@@ -275,7 +281,7 @@ if __name__ == "__main__":
     NT = 6000
     LENGTH = 80e-9
     DURATION = 2.2e-14
-    TARGET_DISTANCE = 10e-9
+    TARGET_DISTANCE = 6e-9
 
     A = X_END_BAR - X_START_BAR
 
@@ -295,9 +301,9 @@ if __name__ == "__main__":
     ATTRIBUTE = "a"
     METHOD = "calculate_travel_time"
 
-    RANGE_START = A
-    RANGE_END = 2 * A
-    RANGE_STEP = A / 10
+    RANGE_START = 1e-9
+    RANGE_END = 8e-9
+    RANGE_STEP = 1e-9
     range_ = arange(RANGE_START, RANGE_END, RANGE_STEP)
 
     plot_attr_influence(
@@ -308,9 +314,9 @@ if __name__ == "__main__":
     ATTRIBUTE = "V"
     METHOD = "calculate_crossing_time"
 
-    RANGE_START = V0
-    RANGE_END = 2 * V0
-    RANGE_STEP = V0 / 10
+    RANGE_START = 0.25 * V0
+    RANGE_END = 4.0 * V0
+    RANGE_STEP = 0.25 * V0
     range_ = arange(RANGE_START, RANGE_END, RANGE_STEP)
     potential_range = [
         create_potential_barrier(NX, LENGTH, v0, X_START_BAR, X_END_BAR)
