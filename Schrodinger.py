@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from matplotlib import pyplot as plt
 from numpy import argmax, empty, ndarray, linspace, searchsorted, zeros
 
@@ -6,70 +7,68 @@ from Derivation import derive
 from PaquetOndeGauss1d4J import GaussWP
 
 
-class waveFunction:
+@dataclass
+class WaveFunctionData:
+    """A dataclass containing all data about a wave function.
+
+    Params:
+    nx: amount of space points
+    nt: amount of time points
+    L: total length of the space interval
+    T: total duration of the simulation
+    k0: initial wave number
+    a: width of the wave packet
+    V: potential energy (a float constant or function)
+    """
+
+    nx: int
+    nt: int
+    L: float
+    T: float
+    k0: float
+    a: float
+    V: float | ndarray
+
+
+class WaveFunction:
     """Class to create a wave function table and fill it with values"""
 
+    _data: WaveFunctionData
     _wave_table: ndarray
     _x_tab: ndarray
     _t_tab: ndarray
 
-    def __init__(
-        self,
-        nx: int,
-        nt: int,
-        L: float,
-        T: float,
-        k0: float,
-        a: float,
-        V: float | ndarray,
-    ) -> None:
-        """Initialize and fill a packet function as a 2D table
+    def __init__(self, data: WaveFunctionData) -> None:
+        """Initialize and fill a packet function as a 2D table"""
+        self._wave_table, self._x_tab, self._t_tab = self._initWaveFunction(data)
+        self._completeWaveFunction(data.V)
 
-        Params:
-        nx: amount of space points
-        nt: amount of time points
-        L: total length of the space interval
-        T: total duration of the simulation
-        k0: initial wave number
-        a: width of the wave packet
-        V: potential energy (a float constant or function)
-        """
-        self._wave_table, self._x_tab, self._t_tab = self._initWaveFunction(
-            nx, nt, L, T, k0, a
-        )
-        self._completeWaveFunction(V)
-
-    def _initWaveFunction(
-        self, nx: int, nt: int, L: float, T: float, k0: float, a: float
-    ) -> (ndarray, ndarray, ndarray):
+    def _initWaveFunction(self, data: WaveFunctionData) -> (ndarray, ndarray, ndarray):
         """Initialize a wave packet function as a 2D table at t=0.
 
         Params:
-        nx: amount of space points
-        nt: amount of time points
-        L: total length of the space interval
-        T: total duration of the simulation
-        k0: initial wave number
-        a: width of the wave packet
+        data: A dataclass containing all wave data
 
         Returns:
         * The wave function as a numpy array [nt][nx]
         * The list of spacial values
         * The list of time values
         """
-        if nx < 1 or nt < 1:
+        if data.nx < 1 or data.nt < 1:
             raise ValueError("The amount of lines and columns must be at least 1.")
 
         # Generate lists containing x and t values
-        x_tab = linspace(-L / 2, L / 2, nx)
-        t_tab = linspace(0, T, nt)
+        x_tab = linspace(-data.L / 2, data.L / 2, data.nx)
+        t_tab = linspace(0, data.T, data.nt)
 
         # Generate a 2D tab containing random data
-        __wave_table = empty((nt, nx), dtype=complex)  # Initialize as complex for WP
+        __wave_table = empty(
+            (data.nt, data.nx), dtype=complex
+        )  # Initialize as complex for WP
 
         # Fill in values in the first line (t=0)
         for j, x in enumerate(x_tab):
-            __wave_table[0, j] = GaussWP(k0, a, x, 0)
+            __wave_table[0, j] = GaussWP(data.k0, data.a, x, 0)
 
         return __wave_table, x_tab, t_tab
 
@@ -222,7 +221,9 @@ if __name__ == "__main__":
     A = X_END_BAR - X_START_BAR
 
     V_barrier = create_potential_barrier(NX, LENGTH, V0, X_START_BAR, X_END_BAR)
-    wave_function = waveFunction(NX, NT, LENGTH, DURATION, K, A, V_barrier)
+    wave_data = WaveFunctionData(NX, NT, LENGTH, DURATION, K, A, V_barrier)
+    wave_function = WaveFunction(wave_data)
+
     print(wave_function.calculate_travel_time(12))
     print(wave_function.calculate_crossing_time(X_START_BAR, X_END_BAR))
     wave_function.plot()
