@@ -55,12 +55,15 @@ if __name__ == "__main__":
     # Deriving x²
     x_values = arange(1, 100, 0.1)
     y_values = x_values**2
-    print(derive(x_values, y_values, 100))
+    derivative = derive(x_values, y_values, 100)
+    print(f"The derivative of x² is {derivative}")
 
     # Double deriving x²
     x_values = arange(1, 100, 0.1)
-    print(derive(x_values, y_values, 100, 2))
+    derivative = derive(x_values, y_values, 100, 2)
+    print(f"The double derivative of x² is {derivative}")
 
     # Deriving 2x
     y_values = 2 * x_values
-    print(derive(x_values, y_values, 100))
+    derivative = derive(x_values, y_values, 100)
+    print(f"The derivative of 2x is {derivative}")

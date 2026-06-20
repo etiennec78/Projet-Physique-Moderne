@@ -292,8 +292,10 @@ if __name__ == "__main__":
 
     # --- Calculating travel & cross times ---
 
-    print(wave_function.calculate_travel_time(TARGET_DISTANCE))
-    print(wave_function.calculate_crossing_time(X_START_BAR, X_END_BAR))
+    travel_time = wave_function.calculate_travel_time(TARGET_DISTANCE)
+    crossing_time = wave_function.calculate_crossing_time(X_START_BAR, X_END_BAR)
+    print(f"Travel time: {travel_time}")
+    print(f"Crossing time: {crossing_time}")
 
     # --- Influence of parameters ---
 
