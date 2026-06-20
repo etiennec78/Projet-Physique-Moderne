@@ -44,7 +44,7 @@ class WaveFunction:
         self._completeWaveFunction(data.V)
         self._data = data
 
-    def _initWaveFunction(self, data: WaveFunctionData) -> (ndarray, ndarray, ndarray):
+    def _initWaveFunction(self, data: WaveFunctionData) -> tuple[ndarray, ndarray, ndarray]:
         """Initialize a wave packet function as a 2D table at t=0.
 
         Params:
@@ -98,7 +98,8 @@ class WaveFunction:
             # For each position
             for j in range(2, nx - 2):
                 # Get the second position derivative
-                d2psi_dx2 = derive(self._x_tab, current_y, j, 2)
+                dx = self._x_tab[1] - self._x_tab[0]
+                d2psi_dx2 = (current_y[j + 1] - 2 * current_y[j] + current_y[j - 1]) / dx**2
 
                 # Get the value of V
                 V_value = V[j] if V_is_array else V
@@ -166,42 +167,21 @@ class WaveFunction:
         return None
 
     def calculate_crossing_time(self, x_start: float, x_end: float) -> float | None:
-        """Calculate the time to go through a barrier.
-
-        Params:
-        x_start: The position start of the barrier
-        x_end: The position stop of the barrier
-        """
+        """Calculate the time for the maximum of the packet to cross the barrier."""
         t_in = None
         t_out = None
 
-        # Get the indexes delimiting the start and the end of the barrier
-        idx_start = searchsorted(self._x_tab, x_start)
-        idx_end = searchsorted(self._x_tab, x_end)
-
-        peak_probability = max(abs(self._wave_table[0]) ** 2)
-        threshold = peak_probability * 1e-6  # Filter out noise
-
         for i in range(len(self._t_tab)):
             proba = abs(self._wave_table[i]) ** 2
+            pic_idx = argmax(proba)
+            pic_x = self._x_tab[pic_idx]
 
-            barrier_prob = proba[idx_start:idx_end]
-            transmitted_prob = proba[idx_end:]
+            if t_in is None and pic_x >= x_start:
+                t_in = self._t_tab[i]
 
-            # Find the time of entry (t_in)
-            if t_in is None:
-                if len(barrier_prob) > 0 and barrier_prob.max() > threshold:
-                    t_in = self._t_tab[i]
-
-            # Find the time of exit (t_out)
-            elif t_out is None:
-                if len(transmitted_prob) > 0 and transmitted_prob.max() > threshold:
-                    t_out = self._t_tab[i]
-                    break
-
-        # Calculate the time in the barrier
-        if t_in is not None and t_out is not None:
-            return t_out - t_in
+            elif t_in is not None and t_out is None and pic_x >= x_end:
+                t_out = self._t_tab[i]
+                return t_out - t_in
 
         return None
 
@@ -233,6 +213,7 @@ def plot_attr_influence(
     data: WaveFunctionData,
     attribute: str,
     range_: ndarray,
+    simulation_values: list | ndarray,
     method_name: str,
     *args: list,
 ):
@@ -245,9 +226,9 @@ def plot_attr_influence(
     method_name: The wave function method to call to get the y value
     *args: The args to give to the method on call
     """
-    values: list(float) = []
+    values: list[float] = []
 
-    for new_val in range_:
+    for new_val in simulation_values:
         # Replace targeted attribute with values from the range
         setattr(data, attribute, new_val)
         wave_function = WaveFunction(data)
@@ -287,9 +268,9 @@ if __name__ == "__main__":
     X_END_BAR = 15e-9
 
     NX = 500
-    NT = 6000
+    NT = 10000
     LENGTH = 80e-9
-    DURATION = 2.2e-14
+    DURATION = 1.5e-14
     TARGET_DISTANCE = 6e-9
 
     A = X_END_BAR - X_START_BAR
@@ -317,7 +298,7 @@ if __name__ == "__main__":
     RANGE_STEP = 1e-9
     range_ = arange(RANGE_START, RANGE_END, RANGE_STEP)
 
-    plot_attr_influence(wave_data, ATTRIBUTE, range_, METHOD, TARGET_DISTANCE)
+    plot_attr_influence(wave_data, ATTRIBUTE, range_, range_, METHOD, TARGET_DISTANCE)
 
     # Influence of V on calculate_crossing_time
     ATTRIBUTE = "V"
@@ -333,5 +314,5 @@ if __name__ == "__main__":
     ]
 
     plot_attr_influence(
-        wave_data, ATTRIBUTE, potential_range, METHOD, X_START_BAR, X_END_BAR
+        wave_data, ATTRIBUTE, range_, potential_range, METHOD, X_START_BAR, X_END_BAR
     )
