@@ -235,6 +235,41 @@ def plot_attr_influence(
     plt.show()
 
 
+def study_influence_of_length(nx, nt, L, T, k, A, V0, x_start, range_a):
+    """Plot a graph to study the influence of the barrier length."""
+    tau_0_vals, tau_t_vals, valid_a_0, valid_a_t = [], [], [], []
+
+    for a_val in range_a:
+        # Free particle (V = 0)
+        data_free = WaveFunctionData(
+            nx, nt, L, T, k, A, BarrierPotential(0.0, x_start, a_val)
+        )
+        t_0 = WaveFunction(data_free).calculate_travel_time(a_val)
+        if t_0 is not None:
+            tau_0_vals.append(t_0)
+            valid_a_0.append(a_val)
+
+        # With barrier (V = V0)
+        data_barrier = WaveFunctionData(
+            nx, nt, L, T, k, A, BarrierPotential(V0, x_start, a_val)
+        )
+        t_t = WaveFunction(data_barrier).calculate_crossing_time(
+            x_start, x_start + a_val
+        )
+        if t_t is not None:
+            tau_t_vals.append(t_t)
+            valid_a_t.append(a_val)
+
+    fig, ax = plt.subplots()
+    ax.plot(valid_a_0, tau_0_vals, label=r"$\tau_{0,num}$ (Particule libre)")
+    ax.plot(valid_a_t, tau_t_vals, label=r"$\tau_{t,num}$ (Franchissement)")
+    ax.set_title("Influence de la longueur 'a' sur les temps de parcours")
+    ax.set_xlabel("Longueur a (m)")
+    ax.set_ylabel("Temps (s)")
+    ax.legend()
+    plt.show()
+
+
 if __name__ == "__main__":
     # --- Ploting a wave function ---
 
@@ -266,15 +301,14 @@ if __name__ == "__main__":
     # --- Influence of parameters ---
 
     # Influence of a on calculate_travel_time
-    ATTRIBUTE = "a"
-    METHOD = "calculate_travel_time"
-
     RANGE_START = 1e-9
     RANGE_END = 8e-9
     RANGE_STEP = 1e-9
     range_ = arange(RANGE_START, RANGE_END, RANGE_STEP)
 
-    plot_attr_influence(wave_data, ATTRIBUTE, range_, range_, METHOD, TARGET_DISTANCE)
+    study_influence_of_length(
+        NX, NT, LENGTH, DURATION, K, A, V0, X_START_BAR, range_
+    )
 
     # Influence of V on calculate_crossing_time
     ATTRIBUTE = "V"
