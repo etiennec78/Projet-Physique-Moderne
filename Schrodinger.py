@@ -44,7 +44,9 @@ class WaveFunction:
         self._completeWaveFunction(data.V)
         self._data = data
 
-    def _initWaveFunction(self, data: WaveFunctionData) -> tuple[ndarray, ndarray, ndarray]:
+    def _initWaveFunction(
+        self, data: WaveFunctionData
+    ) -> tuple[ndarray, ndarray, ndarray]:
         """Initialize a wave packet function as a 2D table at t=0.
 
         Params:
@@ -99,7 +101,9 @@ class WaveFunction:
             # For each position
             for j in range(2, nx - 2):
                 # Get the second position derivative
-                d2psi_dx2 = (current_y[j + 1] - 2 * current_y[j] + current_y[j - 1]) / dx**2
+                d2psi_dx2 = (
+                    current_y[j + 1] - 2 * current_y[j] + current_y[j - 1]
+                ) / dx**2
 
                 # Get the value of V
                 V_value = V[j] if V_is_array else V
@@ -123,9 +127,9 @@ class WaveFunction:
         step = max(1, nt // 8)
         for i in range(0, nt, step):
             ax.plot(
-                self._x_tab, 
-                abs(self._wave_table[i]), 
-                label=f"t = {self._t_tab[i]:.2e} s"
+                self._x_tab,
+                abs(self._wave_table[i]),
+                label=f"t = {self._t_tab[i]:.2e} s",
             )
 
         if isinstance(self._data.V, ndarray):
@@ -147,7 +151,7 @@ class WaveFunction:
 
         # Find the initial position of the packet
         start_x = self._x_tab[argmax(abs(self._wave_table[0]) ** 2)]
-        
+
         target_idx = searchsorted(self._x_tab, start_x + distance)
         if target_idx >= len(self._x_tab):
             return None
@@ -156,12 +160,11 @@ class WaveFunction:
 
     def calculate_crossing_time(self, x_start: float, x_end: float) -> float | None:
 
-        #identifies the beginning and the end of the barrier
+        # identifies the beginning and the end of the barrier
         idx_start = searchsorted(self._x_tab, x_start)
         idx_end = searchsorted(self._x_tab, x_end)
 
-        
-        #identifies the time at which the max of the packet crosses these positions 
+        # identifies the time at which the max of the packet crosses these positions
         t_in = self._t_tab[argmax(abs(self._wave_table[:, idx_start]) ** 2)]
         t_out = self._t_tab[argmax(abs(self._wave_table[:, idx_end]) ** 2)]
 
@@ -187,7 +190,7 @@ def create_potential_barrier(
     x_tab = linspace(-L / 2, L / 2, nx)
     V_tab = zeros(nx)
     for i, x in enumerate(x_tab):
-        if x_start <= x <= x_start+a:
+        if x_start <= x <= x_start + a:
             V_tab[i] = V0
     return V_tab
 
