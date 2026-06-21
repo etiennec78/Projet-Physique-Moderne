@@ -17,7 +17,7 @@ class WaveFunctionData:
     L: total length of the space interval
     T: total duration of the simulation
     k0: initial wave number
-    a: width of the wave packet
+    A: width of the wave packet
     V: potential energy (a float constant or function)
     """
 
@@ -26,7 +26,7 @@ class WaveFunctionData:
     L: float
     T: float
     k0: float
-    a: float
+    A: float
     V: float | ndarray
 
 
@@ -69,7 +69,7 @@ class WaveFunction:
 
         # Fill in values in the first line (t=0)
         for j, x in enumerate(x_tab):
-            __wave_table[0, j] = GaussWP(data.k0, data.a, x, 0)
+            __wave_table[0, j] = GaussWP(data.k0, data.A, x, 0)
 
         return __wave_table, x_tab, t_tab
 
@@ -88,8 +88,9 @@ class WaveFunction:
         self._wave_table[:, 0:2] = 0
         self._wave_table[:, -2:] = 0
 
-        # Get the size of dt
+        # Get the size of dt et dx
         dt = self._t_tab[1] - self._t_tab[0]
+        dx = self._x_tab[1] - self._x_tab[0]
 
         # For each time line
         for n in range(0, nt - 1):
@@ -98,7 +99,6 @@ class WaveFunction:
             # For each position
             for j in range(2, nx - 2):
                 # Get the second position derivative
-                dx = self._x_tab[1] - self._x_tab[0]
                 d2psi_dx2 = (current_y[j + 1] - 2 * current_y[j] + current_y[j - 1]) / dx**2
 
                 # Get the value of V
@@ -122,7 +122,11 @@ class WaveFunction:
         nt = len(self._t_tab)
         step = max(1, nt // 8)
         for i in range(0, nt, step):
-            ax.plot(self._x_tab, abs(self._wave_table[i]))
+            ax.plot(
+                self._x_tab, 
+                abs(self._wave_table[i]), 
+                label=f"t = {self._t_tab[i]:.2e} s"
+            )
 
         if isinstance(self._data.V, ndarray):
             ax_potential.plot(self._x_tab, self._data.V, label="Potentiel V(x)")
@@ -131,6 +135,7 @@ class WaveFunction:
         ax.set_title("Évolution temporelle de la fonction d'onde")
         ax.set_xlabel("Position x (m)")
         ax.set_ylabel("Amplitude |ψ(x, t)|")
+        ax.legend(loc="upper left")
         plt.show()
 
     def calculate_travel_time(self, distance: float) -> float | None:
@@ -141,62 +146,40 @@ class WaveFunction:
         """
 
         # Find the initial position of the packet
-        initial_prob = abs(self._wave_table[0]) ** 2
-        initial_total = initial_prob.sum()
-        if initial_total == 0:
+        start_x = self._x_tab[argmax(abs(self._wave_table[0]) ** 2)]
+        
+        target_idx = searchsorted(self._x_tab, start_x + distance)
+        if target_idx >= len(self._x_tab):
             return None
 
-        start_x = float((self._x_tab * initial_prob).sum() / initial_total)
-
-        # Set the target
-        target_x = start_x + distance
-
-        # Travel the time to see when the packet mean position reaches the target
-        for i in range(len(self._t_tab)):
-            current_prob = abs(self._wave_table[i]) ** 2
-            current_total = current_prob.sum()
-            if current_total == 0:
-                continue
-
-            current_x = float((self._x_tab * current_prob).sum() / current_total)
-
-            if current_x >= target_x:
-                return self._t_tab[i]
-
-        # If the particule has not reached the destination
-        return None
+        return self._t_tab[argmax(abs(self._wave_table[:, target_idx]) ** 2)]
 
     def calculate_crossing_time(self, x_start: float, x_end: float) -> float | None:
-        """Calculate the time for the maximum of the packet to cross the barrier."""
-        t_in = None
-        t_out = None
 
-        for i in range(len(self._t_tab)):
-            proba = abs(self._wave_table[i]) ** 2
-            pic_idx = argmax(proba)
-            pic_x = self._x_tab[pic_idx]
+        #identifies the beginning and the end of the barrier
+        idx_start = searchsorted(self._x_tab, x_start)
+        idx_end = searchsorted(self._x_tab, x_end)
 
-            if t_in is None and pic_x >= x_start:
-                t_in = self._t_tab[i]
+        
+        #identifies the time at which the max of the packet crosses these positions 
+        t_in = self._t_tab[argmax(abs(self._wave_table[:, idx_start]) ** 2)]
+        t_out = self._t_tab[argmax(abs(self._wave_table[:, idx_end]) ** 2)]
 
-            elif t_in is not None and t_out is None and pic_x >= x_end:
-                t_out = self._t_tab[i]
-                return t_out - t_in
-
-        return None
+        return t_out - t_in if t_out > t_in else None
 
 
 def create_potential_barrier(
-    nx: int, L: float, V0: float, x_start: float, x_end: float
+    nx: int, L: float, V0: float, x_start: float, a: float
 ) -> ndarray:
     """Create an array representing the potential function V(x).
 
     Params:
     nx: amount of space points
-    L: total length of the space interval
+    L : total length of the space
     V0: potential energy
     x_start: The start of the barrier
-    x_end: The end of the barrier
+    a: length of the barrier
+
 
     Returns:
     The V(X) array
@@ -204,7 +187,7 @@ def create_potential_barrier(
     x_tab = linspace(-L / 2, L / 2, nx)
     V_tab = zeros(nx)
     for i, x in enumerate(x_tab):
-        if x_start <= x <= x_end:
+        if x_start <= x <= x_start+a:
             V_tab[i] = V0
     return V_tab
 
@@ -268,14 +251,15 @@ if __name__ == "__main__":
     X_END_BAR = 15e-9
 
     NX = 500
-    NT = 10000
+    NT = 40000
     LENGTH = 80e-9
-    DURATION = 1.5e-14
-    TARGET_DISTANCE = 6e-9
+    DURATION = 6e-14
+    TARGET_DISTANCE = 5e-9
 
-    A = X_END_BAR - X_START_BAR
+    a = X_END_BAR - X_START_BAR
+    A = 1e-9
 
-    V_barrier = create_potential_barrier(NX, LENGTH, V0, X_START_BAR, X_END_BAR)
+    V_barrier = create_potential_barrier(NX, LENGTH, V0, X_START_BAR, a)
     wave_data = WaveFunctionData(NX, NT, LENGTH, DURATION, K, A, V_barrier)
     wave_function = WaveFunction(wave_data)
     wave_function.plot()
