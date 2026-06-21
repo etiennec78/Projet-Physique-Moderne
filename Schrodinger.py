@@ -296,7 +296,7 @@ if __name__ == "__main__":
     RANGE_STEP = 0.25 * V0
     range_ = arange(RANGE_START, RANGE_END, RANGE_STEP)
     potential_range = [
-        create_potential_barrier(NX, LENGTH, v0, X_START_BAR, X_END_BAR)
+        create_potential_barrier(NX, LENGTH, v0, X_START_BAR, a)
         for v0 in range_
     ]
 
