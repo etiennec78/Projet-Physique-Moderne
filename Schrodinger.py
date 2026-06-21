@@ -65,15 +65,15 @@ class WaveFunction:
         t_tab = linspace(0, data.T, data.nt)
 
         # Generate a 2D tab containing random data
-        __wave_table = empty(
+        _wave_table = empty(
             (data.nt, data.nx), dtype=complex
         )  # Initialize as complex for WP
 
         # Fill in values in the first line (t=0)
         for j, x in enumerate(x_tab):
-            __wave_table[0, j] = GaussWP(data.k0, data.A, x, 0)
+            _wave_table[0, j] = GaussWP(data.k0, data.A, x, 0)
 
-        return __wave_table, x_tab, t_tab
+        return _wave_table, x_tab, t_tab
 
     def _completeWaveFunction(self, V: float | ndarray) -> ndarray:
         """Complete the wave function table by calculating the values at t>0.
