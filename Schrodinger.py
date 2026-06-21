@@ -310,7 +310,6 @@ if __name__ == "__main__":
     A = 1e-9
     a = X_END_BAR - X_START_BAR
 
-    # 2. Exécution des expériences demandées
     run_basic_simulation(
         NX, NT, LENGTH, DURATION, K, A, V0, X_START_BAR, a, TARGET_DISTANCE
     )
