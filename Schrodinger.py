@@ -8,6 +8,21 @@ from PaquetOndeGauss1d4J import GaussWP
 
 
 @dataclass
+class BarrierPotential:
+    V0: float
+    x_start: float
+    a: float
+
+    def to_array(self, x_tab: ndarray) -> ndarray:
+        """Generate an ndarray from these potential values"""
+        V_tab = zeros(len(x_tab))
+        for i, x in enumerate(x_tab):
+            if self.x_start <= x <= self.x_start + self.a:
+                V_tab[i] = self.V0
+        return V_tab
+
+
+@dataclass
 class WaveFunctionData:
     """A dataclass containing all data about a wave function.
 
@@ -18,7 +33,7 @@ class WaveFunctionData:
     T: total duration of the simulation
     k0: initial wave number
     A: width of the wave packet
-    V: potential energy (a float constant or function)
+    V: potential energy dataclass
     """
 
     nx: int
@@ -27,7 +42,7 @@ class WaveFunctionData:
     T: float
     k0: float
     A: float
-    V: float | ndarray
+    V: BarrierPotential
 
 
 class WaveFunction:
@@ -75,13 +90,14 @@ class WaveFunction:
 
         return _wave_table, x_tab, t_tab
 
-    def _completeWaveFunction(self, V: float | ndarray) -> ndarray:
+    def _completeWaveFunction(self, V: BarrierPotential) -> ndarray:
         """Complete the wave function table by calculating the values at t>0.
 
         Params:
-        V: potential energy (a float constant or function)
+        V: potential energy dataclass
         """
-        V_is_array = isinstance(V, ndarray)
+
+        V_array = V.to_array(self._x_tab)
 
         # Get the length of time and position axis
         nt, nx = self._wave_table.shape
@@ -105,8 +121,7 @@ class WaveFunction:
                     current_y[j + 1] - 2 * current_y[j] + current_y[j - 1]
                 ) / dx**2
 
-                # Get the value of V
-                V_value = V[j] if V_is_array else V
+                V_value = V_array[j]
 
                 # Schrödinger equation
                 kinetic = -(hbar**2 / (2 * m)) * d2psi_dx2
@@ -132,9 +147,8 @@ class WaveFunction:
                 label=f"t = {self._t_tab[i]:.2e} s",
             )
 
-        if isinstance(self._data.V, ndarray):
-            ax_potential.plot(self._x_tab, self._data.V, label="Potentiel V(x)")
-            ax_potential.set_ylabel("Potentiel V(x) (J)")
+        ax_potential.plot(self._x_tab, self._data.V.to_array(self._x_tab), label="Potentiel V(x)")
+        ax_potential.set_ylabel("Potentiel V(x) (J)")
 
         ax.set_title("Évolution temporelle de la fonction d'onde")
         ax.set_xlabel("Position x (m)")
@@ -169,30 +183,6 @@ class WaveFunction:
         t_out = self._t_tab[argmax(abs(self._wave_table[:, idx_end]) ** 2)]
 
         return t_out - t_in if t_out > t_in else None
-
-
-def create_potential_barrier(
-    nx: int, L: float, V0: float, x_start: float, a: float
-) -> ndarray:
-    """Create an array representing the potential function V(x).
-
-    Params:
-    nx: amount of space points
-    L : total length of the space
-    V0: potential energy
-    x_start: The start of the barrier
-    a: length of the barrier
-
-
-    Returns:
-    The V(X) array
-    """
-    x_tab = linspace(-L / 2, L / 2, nx)
-    V_tab = zeros(nx)
-    for i, x in enumerate(x_tab):
-        if x_start <= x <= x_start + a:
-            V_tab[i] = V0
-    return V_tab
 
 
 def plot_attr_influence(
@@ -262,13 +252,12 @@ if __name__ == "__main__":
     a = X_END_BAR - X_START_BAR
     A = 1e-9
 
-    V_barrier = create_potential_barrier(NX, LENGTH, V0, X_START_BAR, a)
+    V_barrier = BarrierPotential(V0, X_START_BAR, a)
     wave_data = WaveFunctionData(NX, NT, LENGTH, DURATION, K, A, V_barrier)
     wave_function = WaveFunction(wave_data)
     wave_function.plot()
 
     # --- Calculating travel & cross times ---
-
     travel_time = wave_function.calculate_travel_time(TARGET_DISTANCE)
     crossing_time = wave_function.calculate_crossing_time(X_START_BAR, X_END_BAR)
     print(f"Travel time: {travel_time}")
@@ -295,8 +284,9 @@ if __name__ == "__main__":
     RANGE_END = 4.0 * V0
     RANGE_STEP = 0.25 * V0
     range_ = arange(RANGE_START, RANGE_END, RANGE_STEP)
+
     potential_range = [
-        create_potential_barrier(NX, LENGTH, v0, X_START_BAR, a)
+        BarrierPotential(v0, X_START_BAR, a)
         for v0 in range_
     ]
 
