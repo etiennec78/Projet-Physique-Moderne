@@ -235,6 +235,21 @@ def plot_attr_influence(
     plt.show()
 
 
+def run_basic_simulation(nx, nt, L, T, k, A, V0, x_start, a, target_distance):
+    """Run a basic wave function simulation."""
+    print("--- Simulation de fonction d'onde ---")
+    V_barrier = BarrierPotential(V0, x_start, a)
+    wave_data = WaveFunctionData(nx, nt, L, T, k, A, V_barrier)
+    wave_function = WaveFunction(wave_data)
+
+    wave_function.plot()
+
+    t_0 = wave_function.calculate_travel_time(target_distance)
+    t_t = wave_function.calculate_crossing_time(x_start, x_start + a)
+    print(f"Temps de parcours cible (t_0) : {t_0} s")
+    print(f"Temps de franchissement (t_t) : {t_t} s\n")
+
+
 def study_influence_of_length(nx, nt, L, T, k, A, V0, x_start, range_a):
     """Plot a graph to study the influence of the barrier length."""
     tau_0_vals, tau_t_vals, valid_a_0, valid_a_t = [], [], [], []
@@ -270,60 +285,40 @@ def study_influence_of_length(nx, nt, L, T, k, A, V0, x_start, range_a):
     plt.show()
 
 
-if __name__ == "__main__":
-    # --- Ploting a wave function ---
+def study_influence_of_potential(nx, nt, L, T, k, A, x_start, a, range_v):
+    """Study the influence of potential."""
+    print("Calcul de l'influence de la hauteur de potentiel 'V0'...")
+    base_data = WaveFunctionData(nx, nt, L, T, k, A, BarrierPotential(0, x_start, a))
 
+    potential_range = [BarrierPotential(v0, x_start, a) for v0 in range_v]
+
+    plot_attr_influence(
+        base_data, "V", range_v, potential_range, "calculate_crossing_time", x_start, x_start + a
+    )
+
+
+if __name__ == "__main__":
+    # Constants
     K = 5e9
     V0 = 1.5 * 1.602176634e-19
     X_START_BAR = 10e-9
     X_END_BAR = 15e-9
-
-    NX = 500
-    NT = 40000
+    NX, NT = 500, 40000
     LENGTH = 80e-9
     DURATION = 6e-14
     TARGET_DISTANCE = 5e-9
-
-    a = X_END_BAR - X_START_BAR
     A = 1e-9
+    a = X_END_BAR - X_START_BAR
 
-    V_barrier = BarrierPotential(V0, X_START_BAR, a)
-    wave_data = WaveFunctionData(NX, NT, LENGTH, DURATION, K, A, V_barrier)
-    wave_function = WaveFunction(wave_data)
-    wave_function.plot()
-
-    # --- Calculating travel & cross times ---
-    travel_time = wave_function.calculate_travel_time(TARGET_DISTANCE)
-    crossing_time = wave_function.calculate_crossing_time(X_START_BAR, X_END_BAR)
-    print(f"Travel time: {travel_time}")
-    print(f"Crossing time: {crossing_time}")
-
-    # --- Influence of parameters ---
-
-    # Influence of a on calculate_travel_time
-    RANGE_START = 1e-9
-    RANGE_END = 8e-9
-    RANGE_STEP = 1e-9
-    range_ = arange(RANGE_START, RANGE_END, RANGE_STEP)
-
-    study_influence_of_length(
-        NX, NT, LENGTH, DURATION, K, A, V0, X_START_BAR, range_
+    # 2. Exécution des expériences demandées
+    run_basic_simulation(
+        NX, NT, LENGTH, DURATION, K, A, V0, X_START_BAR, a, TARGET_DISTANCE
     )
 
-    # Influence of V on calculate_crossing_time
-    ATTRIBUTE = "V"
-    METHOD = "calculate_crossing_time"
+    study_influence_of_length(
+        NX, NT, LENGTH, DURATION, K, A, V0, X_START_BAR, arange(1e-9, 8e-9, 1e-9)
+    )
 
-    RANGE_START = 0.25 * V0
-    RANGE_END = 4.0 * V0
-    RANGE_STEP = 0.25 * V0
-    range_ = arange(RANGE_START, RANGE_END, RANGE_STEP)
-
-    potential_range = [
-        BarrierPotential(v0, X_START_BAR, a)
-        for v0 in range_
-    ]
-
-    plot_attr_influence(
-        wave_data, ATTRIBUTE, range_, potential_range, METHOD, X_START_BAR, X_END_BAR
+    study_influence_of_potential(
+        NX, NT, LENGTH, DURATION, K, A, X_START_BAR, a, arange(0.25 * V0, 4.0 * V0, 0.25 * V0)
     )
